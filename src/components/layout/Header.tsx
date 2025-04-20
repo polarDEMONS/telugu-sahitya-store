@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, Menu, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { itemCount } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +38,19 @@ const Header = () => {
                 <Link to="/categories/non-fiction" className="text-lg">Non-Fiction</Link>
                 <Link to="/categories/poetry" className="text-lg">Poetry</Link>
                 <Link to="/categories/children" className="text-lg">Children's Books</Link>
-                <Link to="/orders" className="text-lg">My Orders</Link>
-                <Link to="/account" className="text-lg">My Account</Link>
+                {isAuthenticated && (
+                  <>
+                    <Link to="/orders" className="text-lg">My Orders</Link>
+                    <Link to="/account" className="text-lg">My Account</Link>
+                    <button onClick={logout} className="text-lg text-red-600">Logout</button>
+                  </>
+                )}
+                {!isAuthenticated && (
+                  <>
+                    <Link to="/login" className="text-lg">Login</Link>
+                    <Link to="/register" className="text-lg">Register</Link>
+                  </>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
@@ -71,15 +84,50 @@ const Header = () => {
             </div>
           </form>
 
-          {/* Cart Link with Counter */}
-          <Link to="/cart" className="relative">
-            <ShoppingCart className="h-6 w-6" />
-            {itemCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center bg-primary text-white text-xs rounded-full">
-                {itemCount}
-              </Badge>
+          {/* Auth & Cart Links */}
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center gap-4">
+                <Link to="/account">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    {user?.name || 'Account'}
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={logout}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="default" size="sm">
+                    Register
+                  </Button>
+                </Link>
+              </div>
             )}
-          </Link>
+
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="h-6 w-6" />
+              {itemCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center bg-primary text-white text-xs rounded-full">
+                  {itemCount}
+                </Badge>
+              )}
+            </Link>
+          </div>
         </div>
 
         {/* Mobile Search Bar */}
