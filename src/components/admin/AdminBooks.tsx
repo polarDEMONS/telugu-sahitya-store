@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Table, 
@@ -10,8 +9,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookCard } from "@/components/books/BookCard";
-import { books } from '@/data/books';
+import BookCard from "@/components/books/BookCard";
+import books from '@/data/books';
 
 const AdminBooks = () => {
   const [allBooks, setAllBooks] = useState(books);
@@ -77,12 +76,10 @@ const AdminBooks = () => {
     };
 
     if (selectedBook) {
-      // Update existing book
       setAllBooks(allBooks.map(book => 
         book.id === updatedBook.id ? updatedBook : book
       ));
     } else {
-      // Add new book
       setAllBooks([...allBooks, updatedBook]);
     }
 
@@ -100,8 +97,6 @@ const AdminBooks = () => {
       setAllBooks(allBooks.filter(book => book.id !== bookId));
     }
   };
-
-  // In a real app, you would save these changes to a database
 
   return (
     <div>

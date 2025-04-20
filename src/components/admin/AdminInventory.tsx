@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Table, 
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { books } from '@/data/books';
+import books from '@/data/books';
 
 // Enhanced books with stock information
 const booksWithStock = books.map(book => ({
