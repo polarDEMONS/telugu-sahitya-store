@@ -1,271 +1,271 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import BookCard from "@/components/books/BookCard";
-import books from '@/data/books';
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import BookCard from '@/components/books/BookCard';
+import { Book } from '@/data/books';
 
 const AdminBooks = () => {
-  const [allBooks, setAllBooks] = useState(books);
-  const [selectedBook, setSelectedBook] = useState<any>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [bookForm, setBookForm] = useState({
+  const [books, setBooks] = useState<Book[]>([]);
+  const [newBook, setNewBook] = useState<Book>({
     id: '',
     title: '',
     author: '',
-    price: '',
-    discountedPrice: '',
-    imageUrl: '',
+    price: 0,
+    originalPrice: 0,
+    coverImage: '',
     description: '',
     category: '',
-    stock: '',
+    rating: 0,
+    reviewCount: 0,
+    language: 'Telugu',
+    publisher: '',
+    publicationDate: '',
+    pages: 0,
+    isbn: '',
+    availability: true,
+    featured: false,
+    slug: ''
   });
+  const [editBookId, setEditBookId] = useState<string | null>(null);
 
-  const handleEditBook = (book: any) => {
-    setSelectedBook(book);
-    setBookForm({
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      price: book.price.toString(),
-      discountedPrice: book.discountedPrice?.toString() || '',
-      imageUrl: book.imageUrl,
-      description: book.description,
-      category: book.category,
-      stock: book.stock?.toString() || '100',
-    });
-    setEditMode(true);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, key: keyof Book) => {
+    setNewBook({ ...newBook, [key]: e.target.value });
   };
 
-  const handleAddNewBook = () => {
-    setSelectedBook(null);
-    setBookForm({
+  const handleSelectChange = (value: string, key: keyof Book) => {
+    setNewBook({ ...newBook, [key]: value });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, key: keyof Book) => {
+    setNewBook({ ...newBook, [key]: e.target.checked });
+  };
+
+  // Mock function to demonstrate adding a book
+  const handleAddBook = () => {
+    const bookWithId = {
+      ...newBook,
       id: `book-${Date.now()}`,
+      slug: newBook.title.toLowerCase().replace(/\s+/g, '-'),
+      publicationDate: new Date().toISOString().split('T')[0],
+      rating: 0,
+      reviewCount: 0
+    };
+    setBooks([...books, bookWithId]);
+    
+    // Reset form
+    setNewBook({
+      id: '',
       title: '',
       author: '',
-      price: '',
-      discountedPrice: '',
-      imageUrl: '/placeholder.svg',
+      price: 0,
+      originalPrice: 0,
+      coverImage: '',
       description: '',
       category: '',
-      stock: '100',
+      rating: 0,
+      reviewCount: 0,
+      language: 'Telugu',
+      publisher: '',
+      publicationDate: '',
+      pages: 0,
+      isbn: '',
+      availability: true,
+      featured: false,
+      slug: ''
     });
-    setEditMode(true);
   };
 
-  const handleSaveBook = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const updatedBook = {
-      id: bookForm.id,
-      title: bookForm.title,
-      author: bookForm.author,
-      price: parseFloat(bookForm.price),
-      discountedPrice: bookForm.discountedPrice ? parseFloat(bookForm.discountedPrice) : undefined,
-      imageUrl: bookForm.imageUrl,
-      description: bookForm.description,
-      category: bookForm.category,
-      stock: parseInt(bookForm.stock),
-    };
-
-    if (selectedBook) {
-      setAllBooks(allBooks.map(book => 
-        book.id === updatedBook.id ? updatedBook : book
-      ));
-    } else {
-      setAllBooks([...allBooks, updatedBook]);
-    }
-
-    setEditMode(false);
-    setSelectedBook(null);
+  const handleEditBook = (book: Book) => {
+    setEditBookId(book.id);
+    setNewBook(book);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setBookForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleDeleteBook = (bookId: string) => {
-    if (confirm('Are you sure you want to delete this book?')) {
-      setAllBooks(allBooks.filter(book => book.id !== bookId));
-    }
+  const handleDeleteBook = (id: string) => {
+    setBooks(books.filter(book => book.id !== id));
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Manage Books</h2>
-        <Button onClick={handleAddNewBook}>Add New Book</Button>
-      </div>
-
-      {editMode ? (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h3 className="text-xl font-bold mb-4">{selectedBook ? 'Edit Book' : 'Add New Book'}</h3>
-          <form onSubmit={handleSaveBook} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <Input 
-                  type="text" 
-                  name="title" 
-                  value={bookForm.title} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Author</label>
-                <Input 
-                  type="text" 
-                  name="author" 
-                  value={bookForm.author} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Price (₹)</label>
-                <Input 
-                  type="number" 
-                  name="price" 
-                  value={bookForm.price} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Discounted Price (₹)</label>
-                <Input 
-                  type="number" 
-                  name="discountedPrice" 
-                  value={bookForm.discountedPrice} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Image URL</label>
-                <Input 
-                  type="text" 
-                  name="imageUrl" 
-                  value={bookForm.imageUrl} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <Input 
-                  type="text" 
-                  name="category" 
-                  value={bookForm.category} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Stock</label>
-                <Input 
-                  type="number" 
-                  name="stock" 
-                  value={bookForm.stock} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-            </div>
-            
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <textarea
-                name="description"
-                value={bookForm.description}
-                onChange={handleInputChange}
-                rows={4}
-                className="w-full border rounded-md p-2"
-                required
-              />
-            </div>
-            
-            <div className="flex space-x-4">
-              <Button type="submit">Save Changes</Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setEditMode(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {allBooks.map((book) => (
-              <TableRow key={book.id}>
-                <TableCell>
-                  <img 
-                    src={book.imageUrl} 
-                    alt={book.title} 
-                    className="h-16 w-12 object-cover" 
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Book Management</h2>
+        
+        {/* Add Book Dialog */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Add New Book</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Book</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input 
+                    id="title" 
+                    value={newBook.title}
+                    onChange={(e) => setNewBook({...newBook, title: e.target.value})}
                   />
-                </TableCell>
-                <TableCell>{book.title}</TableCell>
-                <TableCell>{book.author}</TableCell>
-                <TableCell>
-                  ₹{book.price}
-                  {book.discountedPrice && (
-                    <span className="line-through text-gray-500 ml-2">
-                      ₹{book.discountedPrice}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>{book.stock || 'N/A'}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleEditBook(book)}
-                    >
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleDeleteBook(book.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="author">Author</Label>
+                  <Input 
+                    id="author"
+                    value={newBook.author}
+                    onChange={(e) => setNewBook({...newBook, author: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (₹)</Label>
+                  <Input 
+                    id="price" 
+                    type="number"
+                    value={newBook.price}
+                    onChange={(e) => setNewBook({...newBook, price: parseFloat(e.target.value)})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="originalPrice">Original Price (₹)</Label>
+                  <Input 
+                    id="originalPrice" 
+                    type="number"
+                    value={newBook.originalPrice}
+                    onChange={(e) => setNewBook({...newBook, originalPrice: parseFloat(e.target.value)})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  value={newBook.description}
+                  onChange={(e) => setNewBook({...newBook, description: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select 
+                    value={newBook.category} 
+                    onValueChange={(value) => setNewBook({...newBook, category: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fiction">Fiction</SelectItem>
+                      <SelectItem value="non-fiction">Non-Fiction</SelectItem>
+                      <SelectItem value="poetry">Poetry</SelectItem>
+                      <SelectItem value="children">Children's Books</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="coverImage">Cover Image URL</Label>
+                  <Input 
+                    id="coverImage" 
+                    value={newBook.coverImage}
+                    onChange={(e) => setNewBook({...newBook, coverImage: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="language">Language</Label>
+                  <Input 
+                    id="language" 
+                    value={newBook.language}
+                    onChange={(e) => setNewBook({...newBook, language: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="publisher">Publisher</Label>
+                  <Input 
+                    id="publisher"
+                    value={newBook.publisher}
+                    onChange={(e) => setNewBook({...newBook, publisher: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pages">Pages</Label>
+                  <Input 
+                    id="pages" 
+                    type="number"
+                    value={newBook.pages}
+                    onChange={(e) => setNewBook({...newBook, pages: parseInt(e.target.value)})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="isbn">ISBN</Label>
+                <Input 
+                  id="isbn"
+                  value={newBook.isbn}
+                  onChange={(e) => setNewBook({...newBook, isbn: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddBook}>Add Book</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      {/* Book List */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {books.map(book => (
+          <Card key={book.id} className="overflow-hidden">
+            <div className="p-4">
+              <BookCard book={book} />
+              <div className="flex gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => {
+                    // Open edit dialog with this book
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => {
+                    // Delete this book
+                    setBooks(books.filter(b => b.id !== book.id));
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+        
+        {books.length === 0 && (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            <p>No books added yet. Click "Add New Book" to get started.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
