@@ -5,6 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  provider?: string;
 }
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => void;
 }
 
@@ -47,7 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const mockUser = {
         id: 'user-1',
         name: 'Demo User',
-        email
+        email,
+        provider: 'email'
       };
       
       setUser(mockUser);
@@ -71,7 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const newUser = {
         id: `user-${Date.now()}`,
         name,
-        email
+        email,
+        provider: 'email'
       };
       
       setUser(newUser);
@@ -79,6 +83,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Registration error:', error);
       throw new Error('Registration failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    // In a real app, this would integrate with Google OAuth
+    setIsLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock Google sign-in by creating a user with Google provider
+      const googleUser = {
+        id: `google-user-${Date.now()}`,
+        name: 'Google User',
+        email: `user${Date.now()}@gmail.com`,
+        provider: 'google'
+      };
+      
+      setUser(googleUser);
+      localStorage.setItem('atakaUser', JSON.stringify(googleUser));
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw new Error('Google sign-in failed');
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isLoading,
       login,
       register,
+      signInWithGoogle,
       logout
     }}>
       {children}
