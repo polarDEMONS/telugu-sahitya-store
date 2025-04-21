@@ -18,10 +18,15 @@ class MedusaClient {
   constructor(config: MedusaConfig = { baseUrl: MEDUSA_BACKEND_URL }) {
     this.baseUrl = config.baseUrl;
     this.apiKey = config.apiKey;
+    
+    // Log the backend URL being used
+    console.log("Medusa client initialized with backend URL:", this.baseUrl);
   }
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}/store${endpoint}`;
+    
+    console.log(`Making request to: ${url}`);
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -32,17 +37,23 @@ class MedusaClient {
       headers['Authorization'] = `Bearer ${this.apiKey}`;
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error connecting to Medusa');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+        console.error(`Medusa request failed: ${response.status}`, error);
+        throw new Error(error.message || `HTTP error ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("Medusa request error:", error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // Products
@@ -65,6 +76,16 @@ class MedusaClient {
       method: 'POST',
       body: JSON.stringify({}),
     });
+  }
+  
+  // Test connection 
+  async testConnection() {
+    try {
+      await this.request<any>('/');
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 }
 

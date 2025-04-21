@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,29 +8,45 @@ import AdminOrders from '@/components/admin/AdminOrders';
 import AdminInventory from '@/components/admin/AdminInventory';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings } from 'lucide-react';
 import { medusaClient } from '@/modules/api/medusa/medusa-client';
+import { useToast } from '@/hooks/use-toast';
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('books');
   const [medusaStatus, setMedusaStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [medusaError, setMedusaError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Check Medusa connection
-  React.useEffect(() => {
+  useEffect(() => {
     const checkMedusaConnection = async () => {
       try {
+        console.log("Attempting to connect to Medusa...");
         await medusaClient.getProducts();
+        console.log("Successfully connected to Medusa!");
         setMedusaStatus('connected');
+        toast({
+          title: "Connected to backend",
+          description: "Successfully connected to the Medusa backend service.",
+        });
       } catch (err: any) {
+        console.error("Medusa connection error:", err);
         setMedusaStatus('error');
         setMedusaError(err.message || 'Could not connect to Medusa server');
+        toast({
+          variant: "destructive",
+          title: "Backend connection failed",
+          description: "Could not connect to the Medusa backend service.",
+        });
       }
     };
 
-    checkMedusaConnection();
-  }, []);
+    if (isAuthenticated && isAdmin) {
+      checkMedusaConnection();
+    }
+  }, [isAuthenticated]);
 
   // Redirect non-authenticated users
   if (!isAuthenticated) {
@@ -40,6 +56,11 @@ const Admin = () => {
   // In a real app, you would check if the user has admin rights
   // This is just a placeholder check using the email
   const isAdmin = user?.email === 'admin@ataka.com';
+  
+  // Debug information
+  console.log("Current user:", user);
+  console.log("Is admin?", isAdmin);
+  console.log("Medusa status:", medusaStatus);
 
   if (!isAdmin) {
     return (
@@ -65,6 +86,15 @@ const Admin = () => {
         <p className="text-muted-foreground">
           Manage your products, orders, and inventory from this central dashboard.
         </p>
+      </div>
+      
+      {/* Admin User Information */}
+      <div className="mb-6 p-4 bg-muted rounded-lg">
+        <div className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">Logged in as Admin:</span> 
+          <span className="text-primary">{user?.email}</span>
+        </div>
       </div>
       
       {/* Medusa Connection Status */}

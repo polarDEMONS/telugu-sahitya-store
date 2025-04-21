@@ -1,17 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ShieldCheck } from 'lucide-react';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdminDemo, setIsAdminDemo] = useState(false);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -19,6 +21,18 @@ const Login = () => {
 
   // Get the intended destination from location state or default to home
   const from = location.state?.from?.pathname || '/';
+
+  // If already authenticated, redirect
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Check if user is admin and redirect accordingly
+      if (user?.email === 'admin@ataka.com') {
+        navigate('/admin');
+      } else {
+        navigate(from, { replace: true });
+      }
+    }
+  }, [isAuthenticated, navigate, from, user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,8 +53,7 @@ const Login = () => {
         description: 'Welcome back to ATAKA Bookstore!',
       });
       
-      // Navigate to the intended destination
-      navigate(from, { replace: true });
+      // Navigation happens in the useEffect
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -51,6 +64,19 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const useAdminCredentials = () => {
+    setForm({
+      email: 'admin@ataka.com',
+      password: 'admin123'
+    });
+    setIsAdminDemo(true);
+    
+    toast({
+      title: 'Admin credentials loaded',
+      description: 'Click "Sign in" to log in as admin.',
+    });
   };
 
   return (
@@ -107,10 +133,15 @@ const Login = () => {
 
           <Button
             type="submit"
-            className="w-full"
+            className={`w-full ${isAdminDemo ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Signing in...' : (
+              <>
+                {isAdminDemo && <ShieldCheck className="mr-2 h-4 w-4" />}
+                {isAdminDemo ? 'Sign in as Admin' : 'Sign in'}
+              </>
+            )}
           </Button>
 
           <div className="text-center text-sm">
@@ -129,13 +160,9 @@ const Login = () => {
           <Button 
             variant="outline" 
             className="w-full"
-            onClick={() => {
-              setForm({
-                email: 'admin@ataka.com',
-                password: 'admin123'
-              });
-            }}
+            onClick={useAdminCredentials}
           >
+            <ShieldCheck className="mr-2 h-4 w-4" />
             Use Demo Admin Credentials
           </Button>
         </div>

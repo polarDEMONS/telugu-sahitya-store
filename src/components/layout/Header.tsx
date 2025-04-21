@@ -1,18 +1,29 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, LogIn, User } from 'lucide-react';
+import { Search, ShoppingCart, Menu, LogIn, User, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { itemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // Check if user is admin
+  const isAdmin = user?.email === 'admin@ataka.com';
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +53,11 @@ const Header = () => {
                   <>
                     <Link to="/orders" className="text-lg">My Orders</Link>
                     <Link to="/account" className="text-lg">My Account</Link>
+                    {isAdmin && (
+                      <Link to="/admin" className="text-lg flex items-center text-amber-600">
+                        <ShieldCheck className="h-4 w-4 mr-2" />Admin Dashboard
+                      </Link>
+                    )}
                     <button onClick={logout} className="text-lg text-red-600">Logout</button>
                   </>
                 )}
@@ -87,21 +103,43 @@ const Header = () => {
           {/* Auth & Cart Links */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-4">
-                <Link to="/account">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <User className="h-4 w-4" />
-                    {user?.name || 'Account'}
-                  </Button>
-                </Link>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={logout}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  Logout
-                </Button>
+              <div className="hidden md:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      {isAdmin ? (
+                        <ShieldCheck className="h-4 w-4 text-amber-600" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                      {user?.name || (isAdmin ? 'Admin' : 'Account')}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/account">My Account</Link>
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center text-amber-600">
+                          <ShieldCheck className="h-4 w-4 mr-2" />Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/account/orders">My Orders</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={logout} 
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2">
