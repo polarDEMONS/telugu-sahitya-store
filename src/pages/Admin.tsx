@@ -6,11 +6,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminBooks from '@/components/admin/AdminBooks';
 import AdminOrders from '@/components/admin/AdminOrders';
 import AdminInventory from '@/components/admin/AdminInventory';
-import { FileText, Package, LayoutGrid } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { medusaClient } from '@/lib/medusa-client';
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('books');
+  const [medusaStatus, setMedusaStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [medusaError, setMedusaError] = useState<string | null>(null);
+
+  // Check Medusa connection
+  React.useEffect(() => {
+    const checkMedusaConnection = async () => {
+      try {
+        await medusaClient.getProducts();
+        setMedusaStatus('connected');
+      } catch (err: any) {
+        setMedusaStatus('error');
+        setMedusaError(err.message || 'Could not connect to Medusa server');
+      }
+    };
+
+    checkMedusaConnection();
+  }, []);
 
   // Redirect non-authenticated users
   if (!isAuthenticated) {
@@ -46,6 +66,48 @@ const Admin = () => {
           Manage your products, orders, and inventory from this central dashboard.
         </p>
       </div>
+      
+      {/* Medusa Connection Status */}
+      {medusaStatus === 'checking' && (
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Connecting to Medusa</AlertTitle>
+          <AlertDescription>
+            Attempting to connect to your Medusa e-commerce server...
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {medusaStatus === 'connected' && (
+        <Alert className="mb-6 bg-green-50 border-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-700">Connected to Medusa</AlertTitle>
+          <AlertDescription className="text-green-600">
+            Your admin panel is successfully connected to Medusa e-commerce backend.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {medusaStatus === 'error' && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Connection Error</AlertTitle>
+          <AlertDescription>
+            <p>{medusaError || 'Failed to connect to Medusa server'}</p>
+            <p className="mt-2 text-sm">
+              Make sure your Medusa server is running at http://localhost:9000 or update the URL in src/lib/medusa-client.ts
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => window.location.reload()}
+            >
+              Retry Connection
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
