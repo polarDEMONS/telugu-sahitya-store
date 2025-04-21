@@ -9,7 +9,7 @@ import AdminInventory from '@/components/admin/AdminInventory';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { medusaClient } from '@/lib/medusa-client';
+import { medusaClient } from '@/modules/api/medusa/medusa-client';
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuth();
@@ -95,7 +95,7 @@ const Admin = () => {
           <AlertDescription>
             <p>{medusaError || 'Failed to connect to Medusa server'}</p>
             <p className="mt-2 text-sm">
-              Make sure your Medusa server is running at http://localhost:9000 or update the URL in src/lib/medusa-client.ts
+              Make sure your Medusa server is running at http://localhost:9000 or update the URL in src/modules/api/medusa/medusa-client.ts
             </p>
             <Button 
               variant="outline" 
