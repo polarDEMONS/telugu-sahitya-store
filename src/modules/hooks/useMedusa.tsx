@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { medusaClient } from '@/lib/medusa-client';
+import { medusaClient } from '@/modules/api/medusa/medusa-client';
 
 export function useMedusaProducts() {
   const [products, setProducts] = useState<any[]>([]);
