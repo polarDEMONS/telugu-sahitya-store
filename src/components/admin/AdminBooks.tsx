@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
@@ -21,16 +22,15 @@ const AdminBooks = () => {
     originalPrice: 0,
     coverImage: '',
     description: '',
-    category: '',
-    rating: 0,
-    reviewCount: 0,
     language: 'Telugu',
     publisher: '',
-    publicationDate: '',
+    publicationYear: new Date().getFullYear(),
     pages: 0,
+    categories: [],
+    tags: [],
     isbn: '',
-    availability: true,
-    featured: false,
+    stockStatus: 'in_stock',
+    rating: 0,
     slug: ''
   });
   const [editBookId, setEditBookId] = useState<string | null>(null);
@@ -53,9 +53,9 @@ const AdminBooks = () => {
       ...newBook,
       id: `book-${Date.now()}`,
       slug: newBook.title.toLowerCase().replace(/\s+/g, '-'),
-      publicationDate: new Date().toISOString().split('T')[0],
-      rating: 0,
-      reviewCount: 0
+      stockStatus: 'in_stock' as const,
+      categories: [newBook.categories[0] || 'Fiction'], // Ensure we have at least one category
+      tags: []
     };
     setBooks([...books, bookWithId]);
     
@@ -68,16 +68,15 @@ const AdminBooks = () => {
       originalPrice: 0,
       coverImage: '',
       description: '',
-      category: '',
-      rating: 0,
-      reviewCount: 0,
       language: 'Telugu',
       publisher: '',
-      publicationDate: '',
+      publicationYear: new Date().getFullYear(),
       pages: 0,
+      categories: [],
+      tags: [],
       isbn: '',
-      availability: true,
-      featured: false,
+      stockStatus: 'in_stock',
+      rating: 0,
       slug: ''
     });
   };
@@ -157,19 +156,19 @@ const AdminBooks = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="categories">Category</Label>
                   <Select 
-                    value={newBook.category} 
-                    onValueChange={(value) => setNewBook({...newBook, category: value})}
+                    value={newBook.categories[0] || ''} 
+                    onValueChange={(value) => setNewBook({...newBook, categories: [value]})}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fiction">Fiction</SelectItem>
-                      <SelectItem value="non-fiction">Non-Fiction</SelectItem>
-                      <SelectItem value="poetry">Poetry</SelectItem>
-                      <SelectItem value="children">Children's Books</SelectItem>
+                      <SelectItem value="Fiction">Fiction</SelectItem>
+                      <SelectItem value="Non-Fiction">Non-Fiction</SelectItem>
+                      <SelectItem value="Poetry">Poetry</SelectItem>
+                      <SelectItem value="Children">Children's Books</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
