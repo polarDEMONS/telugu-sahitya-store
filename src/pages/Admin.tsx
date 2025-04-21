@@ -8,7 +8,7 @@ import AdminOrders from '@/components/admin/AdminOrders';
 import AdminInventory from '@/components/admin/AdminInventory';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings } from 'lucide-react';
+import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings, RefreshCw } from 'lucide-react';
 import { medusaClient } from '@/modules/api/medusa/medusa-client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,52 +17,74 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('books');
   const [medusaStatus, setMedusaStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [medusaError, setMedusaError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Check if user is admin
+  const isAdmin = user?.email === 'admin@ataka.com';
+  
+  console.log("Admin.tsx rendered with:", {
+    user,
+    isAuthenticated,
+    isAdmin,
+    medusaStatus
+  });
+
   // Check Medusa connection
-  useEffect(() => {
-    const checkMedusaConnection = async () => {
-      try {
-        console.log("Attempting to connect to Medusa...");
-        await medusaClient.getProducts();
-        console.log("Successfully connected to Medusa!");
+  const checkMedusaConnection = async () => {
+    if (!isAuthenticated || !isAdmin) return;
+    
+    setIsLoading(true);
+    setMedusaStatus('checking');
+    
+    try {
+      console.log("Testing connection to Medusa...");
+      const result = await medusaClient.testConnection();
+      
+      console.log("Medusa connection test result:", result);
+      
+      if (result.success) {
         setMedusaStatus('connected');
         toast({
           title: "Connected to backend",
           description: "Successfully connected to the Medusa backend service.",
         });
-      } catch (err: any) {
-        console.error("Medusa connection error:", err);
+      } else {
         setMedusaStatus('error');
-        setMedusaError(err.message || 'Could not connect to Medusa server');
+        setMedusaError(result.message || 'Could not connect to Medusa server');
         toast({
           variant: "destructive",
           title: "Backend connection failed",
-          description: "Could not connect to the Medusa backend service.",
+          description: result.message || "Could not connect to the Medusa backend service.",
         });
       }
-    };
-
-    if (isAuthenticated && isAdmin) {
-      checkMedusaConnection();
+    } catch (err: any) {
+      console.error("Medusa connection error:", err);
+      setMedusaStatus('error');
+      setMedusaError(err.message || 'Could not connect to Medusa server');
+      toast({
+        variant: "destructive",
+        title: "Backend connection failed",
+        description: err.message || "Could not connect to the Medusa backend service.",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  };
+
+  useEffect(() => {
+    checkMedusaConnection();
+  }, [isAuthenticated, isAdmin]);
 
   // Redirect non-authenticated users
   if (!isAuthenticated) {
+    console.log("Not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
-  // In a real app, you would check if the user has admin rights
-  // This is just a placeholder check using the email
-  const isAdmin = user?.email === 'admin@ataka.com';
-  
-  // Debug information
-  console.log("Current user:", user);
-  console.log("Is admin?", isAdmin);
-  console.log("Medusa status:", medusaStatus);
-
+  // Show access denied for non-admin users
   if (!isAdmin) {
+    console.log("Not admin, showing access denied");
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto text-center">
@@ -125,15 +147,26 @@ const Admin = () => {
           <AlertDescription>
             <p>{medusaError || 'Failed to connect to Medusa server'}</p>
             <p className="mt-2 text-sm">
-              Make sure your Medusa server is running at http://localhost:9000 or update the URL in src/modules/api/medusa/medusa-client.ts
+              Make sure your Medusa server is running and accessible. The current backend URL is: {medusaClient['baseUrl']}
             </p>
             <Button 
               variant="outline" 
               size="sm" 
               className="mt-2"
-              onClick={() => window.location.reload()}
+              onClick={checkMedusaConnection}
+              disabled={isLoading}
             >
-              Retry Connection
+              {isLoading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry Connection
+                </>
+              )}
             </Button>
           </AlertDescription>
         </Alert>
