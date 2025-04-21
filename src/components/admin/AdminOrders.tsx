@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Table, 
@@ -20,6 +19,7 @@ import {
 import { toast } from '@/components/ui/sonner';
 import { format } from 'date-fns';
 import { FileText, Package } from 'lucide-react';
+import OrderPaymentStatus from './OrderPaymentStatus';
 
 // Order type definition
 interface OrderItem {
@@ -254,6 +254,7 @@ const AdminOrders = () => {
                 <TableHead>Date</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -279,6 +280,9 @@ const AdminOrders = () => {
                       {order.status}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    <OrderPaymentStatus orderId={order.id} />
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button 
                       variant="outline" 
@@ -293,7 +297,7 @@ const AdminOrders = () => {
               
               {filteredOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     <p>No orders match your filters.</p>
                   </TableCell>
                 </TableRow>
