@@ -45,6 +45,9 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
 }
 
+// Fix for the blank page issue - avoid double initialization
+let rootContainer = null;
+
 try {
   console.log("Starting application render...");
   const rootElement = document.getElementById("root");
@@ -53,15 +56,20 @@ try {
     throw new Error("Root element not found! Make sure there's a div with id='root' in your index.html");
   }
   
-  const root = createRoot(rootElement);
-  root.render(
-    <ErrorBoundary>
-      <StrictMode>
-        <App />
-      </StrictMode>
-    </ErrorBoundary>
-  );
-  console.log("Application render completed");
+  // Check if we've already initialized a root for this container
+  if (!rootContainer) {
+    rootContainer = createRoot(rootElement);
+    rootContainer.render(
+      <ErrorBoundary>
+        <StrictMode>
+          <App />
+        </StrictMode>
+      </ErrorBoundary>
+    );
+    console.log("Application render completed");
+  } else {
+    console.warn("Attempted to initialize root multiple times - skipping");
+  }
 } catch (err) {
   console.error("Fatal error during application initialization:", err);
   // Display a minimal fallback UI for fatal errors

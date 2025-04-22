@@ -9,12 +9,15 @@ const Home = () => {
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
+    console.log("Home component mounted");
   }, []);
 
   // Filter books for different sections
   const featuredBooks = books.slice(0, 5);
   const newArrivals = [...books].sort(() => 0.5 - Math.random()).slice(0, 5);
   const bestSellers = [...books].sort((a, b) => b.rating - a.rating).slice(0, 5);
+
+  console.log("Home rendering with", featuredBooks.length, "featured books");
 
   return (
     <div className="container mx-auto px-4 py-6">
