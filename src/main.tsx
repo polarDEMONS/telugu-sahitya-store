@@ -3,7 +3,6 @@ import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { AuthProvider } from './hooks/useAuth';
 
 // Error boundary to catch rendering errors
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
@@ -58,9 +57,7 @@ try {
   root.render(
     <ErrorBoundary>
       <StrictMode>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <App />
       </StrictMode>
     </ErrorBoundary>
   );
