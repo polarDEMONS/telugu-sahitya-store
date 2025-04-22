@@ -4,24 +4,24 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Error boundary to catch rendering errors
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
-  constructor(props: {children: React.ReactNode}) {
+// Simpler error boundary implementation
+class ErrorBoundary extends React.Component {
+  constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError(error) {
+    console.error("Error caught in error boundary:", error);
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error, errorInfo) {
     console.error("React error boundary caught an error:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI when an error is caught
       return (
         <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md flex flex-col items-center mt-10">
           <h1 className="text-xl font-bold text-red-600 mb-4">Something went wrong</h1>
@@ -45,39 +45,29 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
 }
 
-// Fix for the blank page issue - avoid double initialization
-let rootContainer = null;
-
+// Clean up the rendering logic to avoid issues
 try {
   console.log("Starting application render...");
   const rootElement = document.getElementById("root");
   
   if (!rootElement) {
-    throw new Error("Root element not found! Make sure there's a div with id='root' in your index.html");
+    throw new Error("Root element not found!");
   }
   
-  // Check if we've already initialized a root for this container
-  if (!rootContainer) {
-    rootContainer = createRoot(rootElement);
-    rootContainer.render(
-      <ErrorBoundary>
-        <StrictMode>
-          <App />
-        </StrictMode>
-      </ErrorBoundary>
-    );
-    console.log("Application render completed");
-  } else {
-    console.warn("Attempted to initialize root multiple times - skipping");
-  }
+  const root = createRoot(rootElement);
+  root.render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+  console.log("Application render completed");
 } catch (err) {
   console.error("Fatal error during application initialization:", err);
-  // Display a minimal fallback UI for fatal errors
   document.body.innerHTML = `
     <div style="padding: 20px; max-width: 500px; margin: 50px auto; text-align: center; font-family: sans-serif;">
       <h1 style="color: #e53e3e; margin-bottom: 16px;">Application Failed to Start</h1>
       <p style="margin-bottom: 16px;">There was a critical error during application initialization:</p>
-      <pre style="background: #f7fafc; padding: 12px; border-radius: 4px; overflow: auto; text-align: left;">${err instanceof Error ? err.message : String(err)}</pre>
+      <pre style="background: #f7fafc; padding: 12px; border-radius: 4px; overflow: auto; text-align: left;">${String(err)}</pre>
       <button style="margin-top: 16px; padding: 8px 16px; background: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.reload()">Reload Page</button>
     </div>
   `;

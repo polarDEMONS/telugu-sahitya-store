@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { CartProvider } from "./hooks/useCart";
 import { AuthProvider } from "./hooks/useAuth";
+import { useState, useEffect } from "react";
 
 // Pages
 import Home from "./pages/Home";
@@ -21,21 +22,64 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Admin from "./pages/Admin";
 
-// Initialize the QueryClient
+// Initialize the QueryClient with safer defaults
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
 
 // Get the base URL from the environment or default to '/'
-const basename = import.meta.env.BASE_URL || '/';
+const basename = '/';
 
 const App = () => {
-  console.log("App component rendering...");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    // Simulate checking if everything is ready
+    console.log("App initializing...");
+    try {
+      // Any initialization logic here
+      console.log("App initialized successfully");
+      setIsLoading(false);
+    } catch (err) {
+      console.error("App initialization failed:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      setIsLoading(false);
+    }
+  }, []);
+  
+  console.log("App render state:", { isLoading, error });
+  
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="p-6 max-w-md bg-white rounded-xl shadow-md">
+          <h1 className="text-xl font-bold text-red-600 mb-4">Application Error</h1>
+          <p className="text-gray-700 mb-4">{error.message}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Reload Application
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   return (
     <QueryClientProvider client={queryClient}>
