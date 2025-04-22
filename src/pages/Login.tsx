@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,22 +24,17 @@ const Login = () => {
   // If already authenticated, redirect
   useEffect(() => {
     if (isAuthenticated) {
+      console.log("User authenticated:", user);
       // Check if user is admin and redirect accordingly
       if (user?.email === 'admin@ataka.com') {
+        console.log("Admin user detected, redirecting to /admin");
         navigate('/admin');
       } else {
+        console.log("Regular user, redirecting to:", from);
         navigate(from, { replace: true });
       }
     }
   }, [isAuthenticated, navigate, from, user]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +58,14 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: value,
+    }));
   };
 
   const useAdminCredentials = () => {
