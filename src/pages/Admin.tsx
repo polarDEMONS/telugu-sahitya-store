@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminBooks from '@/components/admin/AdminBooks';
 import AdminOrders from '@/components/admin/AdminOrders';
 import AdminInventory from '@/components/admin/AdminInventory';
+import AdminPayments from '@/components/admin/AdminPayments';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings, RefreshCw } from 'lucide-react';
+import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings, RefreshCw, CreditCard } from 'lucide-react';
 import { medusaClient } from '@/modules/api/medusa/medusa-client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -173,7 +174,7 @@ const Admin = () => {
       )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="books" className="flex items-center justify-center">
             <LayoutGrid className="mr-2 h-4 w-4" />
             <span>Books</span>
@@ -185,6 +186,10 @@ const Admin = () => {
           <TabsTrigger value="inventory" className="flex items-center justify-center">
             <Package className="mr-2 h-4 w-4" />
             <span>Inventory</span>
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center justify-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Payments</span>
           </TabsTrigger>
         </TabsList>
         
@@ -198,6 +203,10 @@ const Admin = () => {
         
         <TabsContent value="inventory">
           <AdminInventory />
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <AdminPayments />
         </TabsContent>
       </Tabs>
     </div>
