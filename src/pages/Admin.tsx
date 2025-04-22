@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
@@ -7,6 +6,7 @@ import AdminBooks from '@/components/admin/AdminBooks';
 import AdminOrders from '@/components/admin/AdminOrders';
 import AdminInventory from '@/components/admin/AdminInventory';
 import AdminPayments from '@/components/admin/AdminPayments';
+import AdminShiprocket from '@/components/admin/AdminShiprocket';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FileText, Package, LayoutGrid, AlertCircle, CheckCircle2, Settings, RefreshCw, CreditCard } from 'lucide-react';
@@ -21,7 +21,6 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check if user is admin
   const isAdmin = user?.email === 'admin@ataka.com';
   
   console.log("Admin.tsx rendered with:", {
@@ -31,7 +30,6 @@ const Admin = () => {
     medusaStatus
   });
 
-  // Check Medusa connection
   const checkMedusaConnection = async () => {
     if (!isAuthenticated || !isAdmin) return;
     
@@ -77,13 +75,11 @@ const Admin = () => {
     checkMedusaConnection();
   }, [isAuthenticated, isAdmin]);
 
-  // Redirect non-authenticated users
   if (!isAuthenticated) {
     console.log("Not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
-  // Show access denied for non-admin users
   if (!isAdmin) {
     console.log("Not admin, showing access denied");
     return (
@@ -111,7 +107,6 @@ const Admin = () => {
         </p>
       </div>
       
-      {/* Admin User Information */}
       <div className="mb-6 p-4 bg-muted rounded-lg">
         <div className="flex items-center gap-2">
           <Settings className="h-5 w-5 text-muted-foreground" />
@@ -120,7 +115,6 @@ const Admin = () => {
         </div>
       </div>
       
-      {/* Medusa Connection Status */}
       {medusaStatus === 'checking' && (
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
@@ -174,7 +168,7 @@ const Admin = () => {
       )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-5 mb-8">
           <TabsTrigger value="books" className="flex items-center justify-center">
             <LayoutGrid className="mr-2 h-4 w-4" />
             <span>Books</span>
@@ -190,6 +184,10 @@ const Admin = () => {
           <TabsTrigger value="payments" className="flex items-center justify-center">
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Payments</span>
+          </TabsTrigger>
+          <TabsTrigger value="shiprocket" className="flex items-center justify-center">
+            <Package className="mr-2 h-4 w-4" />
+            <span>Shipping</span>
           </TabsTrigger>
         </TabsList>
         
@@ -207,6 +205,10 @@ const Admin = () => {
 
         <TabsContent value="payments">
           <AdminPayments />
+        </TabsContent>
+        
+        <TabsContent value="shiprocket">
+          <AdminShiprocket />
         </TabsContent>
       </Tabs>
     </div>
