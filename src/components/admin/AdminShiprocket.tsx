@@ -29,7 +29,7 @@ export default function AdminShiprocket() {
         billing_email: 'test@example.com',
         billing_phone: '9999999999',
         shipping_is_billing: true,
-        payment_method: 'prepaid',
+        payment_method: 'prepaid' as 'prepaid' | 'COD', // Fix: Use proper type assertion
         sub_total: 100,
         length: 10,
         breadth: 10,
